@@ -8,12 +8,18 @@
 # define ROTR64(qword, n) ((qword) >> (n) ^ ((qword) << (64 - (n))))
 
 /* Optimized version of Ch(x,y,z)=((x & y) | (~x & z)) */
-#define Ch(x,y,z)  ((z) ^ ((x) & ((y) ^ (z))))
+# define Ch(x,y,z) ((x & y) ^ (~x & z))
 /* Optimized version of Maj(x,y,z)=((x & y) ^ (x & z) ^ (y & z)) */
-#define Maj(x,y,z) (((x) & (y)) ^ ((z) & ((x) ^ (y))))
+# define Maj(x,y,z) ((x & y) ^ (x & z) ^ (y & z))
 
-#define sigma0(x) (ROTR64((x),  1) ^ ROTR64((x),  8) ^ ((x) >> 7))
-#define sigma1(x) (ROTR64((x), 19) ^ ROTR64((x), 61) ^ ((x) >> 6))
+# define SIGMA0(x) (ROTR64((x), 28) ^ ROTR64((x), 34) ^ ROTR64((x), 39))
+# define SIGMA1(x) (ROTR64((x), 14) ^ ROTR64((x), 18) ^ ROTR64((x), 41))
+
+# define SIGMA0_W(x) (ROTR64((x),  1) ^ ROTR64((x),  8) ^ ((x) >> 7))
+# define SIGMA1_W(x) (ROTR64((x), 19) ^ ROTR64((x), 61) ^ ((x) >> 6))
+
+# define RECALCULATE_W(W,n) (W[n] += \
+	(sigma1(W[(n - 2) & 15]) + W[(n - 7) & 15] + sigma0(W[(n - 15) & 15])))
 
 static const uint64_t g_constants[80] = {
 		0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f,
@@ -56,9 +62,9 @@ static uint64_t  g_hash[8] = {
 		0x5be0cd19137e2179
 };
 
-static char     g_words[80][17];
+static uint64_t     g_words[80];
 
-// #define W[n] = sigma1(W[n - 2]) + W[n - 7] + sigma0(W[n - 15]) + W[n - 16];
+// #define W[n] = SIGMA1(W[n - 2]) + W[n - 7] + SIGMA0(W[n - 15]) + W[n - 16];
 
 
 #endif

@@ -2,6 +2,7 @@
 # include "libft/libft.h"
 # include <stdio.h>
 
+
 void    init_words(char *str);
 char    *get_words(char *str);
 char    *ft_concert_string_to_binary(char *input);
@@ -11,8 +12,50 @@ char    *ft_convert_string_to_hex(char *input);
 int main()
 {
 	char *words = get_words("abc");
+	//char *words = get_words("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmn");
 	printf("%s\n", words);
 	init_words(words);
+
+	uint64_t    a, b, c, d, e, f, g, h;
+
+	a = g_hash[0];
+	b = g_hash[1];
+	c = g_hash[2];
+	d = g_hash[3];
+	e = g_hash[4];
+	f = g_hash[5];
+	g = g_hash[6];
+	h = g_hash[7];
+
+	int i = 0;
+	while (i < 80)
+	{
+		uint64_t    ch = Ch(e, f, g);
+		uint64_t    maj = Maj(a, b, c);
+		uint64_t    sigma0 = SIGMA0(a);
+		uint64_t    sigma1 = SIGMA1(e);
+		uint64_t T1 = h + sigma1 + ch + g_constants[i] + (g_words[i]);
+		uint64_t T2 = sigma0 + maj;
+
+		h = g;
+		g = f;
+		f = e;
+		e = d + T1;
+		d = c;
+		c = b;
+		b = a;
+		a = T1 + T2;
+		i++;
+	}
+	g_hash[0] = a + g_hash[0];
+	g_hash[1] = b + g_hash[1];
+	g_hash[2] = c + g_hash[2];
+	g_hash[3] = d + g_hash[3];
+	g_hash[4] = e + g_hash[4];
+	g_hash[5] = f + g_hash[5];
+	g_hash[6] = g + g_hash[6];
+	g_hash[7] = h + g_hash[7];
+	printf("%llx%llx%llx%llx%llx%llx%llx%llx\n", g_hash[0], g_hash[1], g_hash[2], g_hash[3], g_hash[4], g_hash[5], g_hash[6], g_hash[7]);
 	return (0);
 }
 
@@ -45,17 +88,25 @@ char    *get_words(char *str)
 void    init_words(char *str)
 {
 	int i;
-	int index;
+	int j;
+	char hex[17];
 
-	index = 0;
+	j = 0;
 	while (str && *str)
 	{
 		i = 0;
 		while (i < 16)
-			g_words[index][i++] = *str++;
-		g_words[index][i] = 0;
-		printf("[%d] [%s]\n", index, g_words[index]);
-		index++;
+			hex[i++] = *str++;
+		hex[i] = 0;
+		g_words[j++] = (uint64_t) strtol(hex, NULL, 16);
+	}
+	while (j < 80)
+	{
+		g_words[j] = SIGMA1_W(g_words[j - 2])
+		                 + g_words[j - 7]
+		                 + SIGMA0_W(g_words[j - 15])
+		                 + g_words[j - 16];
+		j++;
 	}
 }
 
