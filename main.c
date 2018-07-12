@@ -7,15 +7,33 @@ void    init_words(char *str);
 char    *get_words(char *str);
 char    *ft_concert_string_to_binary(char *input);
 char    *ft_convert_string_to_hex(char *input);
+void    get_hash(void);
 
 
 int main()
 {
-//	char *words1 = get_words("abc");
-	char *words = get_words("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu");
-	printf("%s\n", words);
-	init_words(words);
+//	char *words = get_words("abc");
+	size_t i;
 
+	char *words = get_words("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu");
+	i = ft_strlen(words) / 256;
+
+	while (i-- > 0)
+	{
+		char *str;
+		if (!(str = ft_memalloc(257)))
+			return (-1);
+		ft_strncpy(str, words, 256);
+		str[256] = 0;
+		init_words(str);
+		get_hash();
+		words += 256;
+	}
+	return (0);
+}
+
+void    get_hash(void)
+{
 	uint64_t    a, b, c, d, e, f, g, h;
 
 	a = g_hash[0];
@@ -26,10 +44,12 @@ int main()
 	f = g_hash[5];
 	g = g_hash[6];
 	h = g_hash[7];
+//	printf("%llx-%llx-%llx-%llx-%llx-%llx-%llx-%llx\n", g_hash[0], g_hash[1], g_hash[2], g_hash[3], g_hash[4], g_hash[5], g_hash[6], g_hash[7]);
 
 	int i = 0;
 	while (i < 80)
 	{
+
 		uint64_t    ch = Ch(e, f, g);
 		uint64_t    maj = Maj(a, b, c);
 		uint64_t    sigma0 = SIGMA0(a);
@@ -45,18 +65,20 @@ int main()
 		c = b;
 		b = a;
 		a = T1 + T2;
+		printf("[%d] %llx-%llx-%llx-%llx\n", i, a, b, c, d);
+		printf("[%d] %llx-%llx-%llx-%llx\n\n", i, e ,f, g, h);
 		i++;
 	}
 	g_hash[0] = a + g_hash[0];
 	g_hash[1] = b + g_hash[1];
 	g_hash[2] = c + g_hash[2];
+	printf("H[%llx] e[%llx] [%llx]\n", g_hash[3], d, d + g_hash[3]);
 	g_hash[3] = d + g_hash[3];
 	g_hash[4] = e + g_hash[4];
 	g_hash[5] = f + g_hash[5];
 	g_hash[6] = g + g_hash[6];
 	g_hash[7] = h + g_hash[7];
-	printf("%llx%llx%llx%llx%llx%llx%llx%llx\n", g_hash[0], g_hash[1], g_hash[2], g_hash[3], g_hash[4], g_hash[5], g_hash[6], g_hash[7]);
-	return (0);
+	printf("%llx %llx %llx %llx %llx %llx %llx %llx\n", g_hash[0], g_hash[1], g_hash[2], g_hash[3], g_hash[4], g_hash[5], g_hash[6], g_hash[7]);
 }
 
 char    *get_words(char *str)
@@ -76,7 +98,7 @@ char    *get_words(char *str)
 	len_input_size = ft_strlen(bin_input) + ft_strlen(bin_size);
 	if (ft_strlen(bin_input) <= 224)
 	{
-		printf("%zu - %s\n", ft_strlen(bin_input), bin_input);
+	//	printf("%zu - %s\n", ft_strlen(bin_input), bin_input);
 		n_block = 1;
 		padding = 256 - ft_strlen(bin_input) - ft_strlen(bin_size);
 	} else
@@ -88,7 +110,7 @@ char    *get_words(char *str)
 			n_block++;
 		}
 		padding = total - ft_strlen(bin_input) - ft_strlen(bin_size) + ((n_block - 1) * 256);
-		printf("n_block[%zu] total [%zu] padding [%zu]\n", n_block, total, padding);
+	//	printf("n_block[%zu] total [%zu] padding [%zu]\n", n_block, total, padding);
 	}
 
 
@@ -110,7 +132,6 @@ void    init_words(char *str)
 	int i;
 	int j;
 	char hex[17];
-
 	j = 0;
 	while (str && *str)
 	{
