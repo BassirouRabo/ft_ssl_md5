@@ -11,8 +11,8 @@ char    *ft_convert_string_to_hex(char *input);
 
 int main()
 {
-	char *words = get_words("abc");
-	//char *words = get_words("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmn");
+//	char *words1 = get_words("abc");
+	char *words = get_words("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu");
 	printf("%s\n", words);
 	init_words(words);
 
@@ -68,21 +68,41 @@ char    *get_words(char *str)
 	size_t  len_input_size;
 	size_t  n_block;
 
+	padding = 0;
+	n_block = 0;
 	bin_input = ft_str_new_suffix(ft_convert_string_to_hex(str), '8', 1);
 	bin_size = ft_itoa_base((int)(ft_strlen(str) * 8), 16);
-	padding = 0;
-	n_block = 1;
+//	printf("%s - %zu - %s\n", bin_input, ft_strlen(bin_input) , bin_size);
 	len_input_size = ft_strlen(bin_input) + ft_strlen(bin_size);
-	if (len_input_size < 256)
+	if (ft_strlen(bin_input) <= 224)
+	{
+		printf("%zu - %s\n", ft_strlen(bin_input), bin_input);
+		n_block = 1;
+		padding = 256 - ft_strlen(bin_input) - ft_strlen(bin_size);
+	} else
+	{
+		size_t  total = 256;
+		while (total < ft_strlen(bin_input) + 32)
+		{
+			total += 256;
+			n_block++;
+		}
+		padding = total - ft_strlen(bin_input) - ft_strlen(bin_size) + ((n_block - 1) * 256);
+		printf("n_block[%zu] total [%zu] padding [%zu]\n", n_block, total, padding);
+	}
+
+
+/*	if (len_input_size < 256)
 		padding = 256 - len_input_size;
 	else if (len_input_size > 256)
 	{
 		padding = len_input_size % 256;
 		n_block = len_input_size / 256;
-	}
-	if (!(bin = ft_memalloc(n_block * 256 + 1)))
+	}*/
+	if (!(bin = ft_memalloc((n_block + 1) * 256 + 1)))
 		return (NULL);
-	return (ft_strjoin(ft_str_new_suffix(ft_strcpy(bin, bin_input) , '0', padding * n_block), bin_size));
+	//return (ft_strjoin(ft_str_new_suffix(ft_strcpy(bin, bin_input) , '0', padding * n_block), bin_size));
+	return (ft_strjoin(ft_str_new_suffix(ft_strcpy(bin, bin_input) , '0', padding), bin_size));
 }
 
 void    init_words(char *str)
@@ -102,10 +122,7 @@ void    init_words(char *str)
 	}
 	while (j < 80)
 	{
-		g_words[j] = SIGMA1_W(g_words[j - 2])
-		                 + g_words[j - 7]
-		                 + SIGMA0_W(g_words[j - 15])
-		                 + g_words[j - 16];
+		g_words[j] = SIGMA1_W(g_words[j - 2]) + g_words[j - 7] + SIGMA0_W(g_words[j - 15]) + g_words[j - 16];
 		j++;
 	}
 }
